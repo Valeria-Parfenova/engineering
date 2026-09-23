@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Оформление заказа</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f8;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+        .card {
+            background: #fff;
+            padding: 30px 40px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            width: 400px;
+        }
+        h1 {
+            font-size: 22px;
+            margin-top: 0;
+            color: #222;
+        }
+        label {
+            display: block;
+            margin-top: 15px;
+            font-size: 14px;
+            color: #555;
+        }
+        input {
+            width: 100%;
+            padding: 8px 10px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        button {
+            margin-top: 20px;
+            width: 100%;
+            padding: 10px;
+            background: #acacfe;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        button:hover { background: #9898f8; }
+        #status {
+            margin-top: 15px;
+            font-size: 14px;
+            text-align: center;
+        }
+        .ok { color: #007d34; }
+        .err { color: #e55137; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>Оформление заказа</h1>
+        <form id="orderForm">
+            <label for="customer">Покупатель</label>
+            <input type="text" id="customer" name="customer" required>
+
+            <label for="product">Товар</label>
+            <input type="text" id="product" name="product" required>
+
+            <label for="amount">Сумма</label>
+            <input type="number" id="amount" name="amount" step="0.01" min="0" required>
+
+            <button type="submit">Отправить заказ</button>
+        </form>
+        <div id="status"></div>
+    </div>
+
+    <script>
+        const form = document.getElementById('orderForm');
+        const status = document.getElementById('status');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const data = {
+                customer: document.getElementById('customer').value.trim(),
+                product:  document.getElementById('product').value.trim(),
+                amount:   parseFloat(document.getElementById('amount').value)
+            };
+
+            status.textContent = 'Отправка...';
+            status.className = '';
+
+            try {
+                const response = await fetch('/api/orders', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                if (!response.ok) {
+                    throw new Error('HTTP ' + response.status);
+                }
+
+                const result = await response.json();
+                status.textContent = 'Заказ создан! ID: ' + (result.order_id ?? '—');
+                status.className = 'ok';
+                form.reset();
+            } catch (err) {
+                status.textContent = 'Ошибка: ' + err.message;
+                status.className = 'err';
+            }
+        });
+    </script>
+</body>
+</html>
