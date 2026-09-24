@@ -2,7 +2,6 @@ version: '3'
 
 services:
 
-
   mysql:
     container_name: mysql
     image: mysql
@@ -21,7 +20,6 @@ services:
       - PMA_HOST=mysql
     depends_on:
       - mysql
-
 
   kafka:
     image: apache/kafka:3.7.0
@@ -108,3 +106,23 @@ services:
       MYSQL_DB: orders_db
       KAFKA_BOOTSTRAP: kafka:9092
       RABBITMQ_HOST: rabbitmq
+
+  payment-consumer:
+    build: ./consumers
+    container_name: order-payment-consumer
+    command: python payment_consumer.py
+    depends_on:
+      kafka-init:
+        condition: service_completed_successfully
+    environment:
+      KAFKA_BOOTSTRAP: kafka:9092
+
+  delivery-consumer:
+    build: ./consumers
+    container_name: order-delivery-consumer
+    command: python delivery_consumer.py
+    depends_on:
+      kafka-init:
+        condition: service_completed_successfully
+    environment:
+      KAFKA_BOOTSTRAP: kafka:9092
