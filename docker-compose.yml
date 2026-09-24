@@ -2,7 +2,6 @@ version: '3'
 
 services:
 
-
   mysql:
     container_name: mysql
     image: mysql
@@ -27,7 +26,6 @@ services:
       - PMA_HOST=mysql
     depends_on:
       - mysql
-
 
   kafka:
     image: apache/kafka:3.7.0
