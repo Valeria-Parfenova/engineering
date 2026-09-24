@@ -1,3 +1,5 @@
+USE orders_db;
+
 CREATE TABLE IF NOT EXISTS orders (
     id INT AUTO_INCREMENT PRIMARY KEY,
     customer VARCHAR(255) NOT NULL,

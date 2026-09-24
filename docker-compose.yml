@@ -9,7 +9,10 @@ services:
       - ./mysql_data:/var/lib/mysql
       - ./mysql-init:/docker-entrypoint-initdb.d
     environment:
-      - MYSQL_ROOT_PASSWORD=root
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: orders_db
+      MYSQL_USER: order_user    
+      MYSQL_PASSWORD: order_pass
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
       interval: 10s
@@ -113,11 +116,12 @@ services:
         condition: service_healthy
     environment:
       MYSQL_HOST: mysql
-      MYSQL_USER: appuser
-      MYSQL_PASSWORD: apppass
+      MYSQL_USER: order_user
+      MYSQL_PASSWORD: order_pass
       MYSQL_DB: orders_db
       KAFKA_BOOTSTRAP: kafka:9092
       RABBITMQ_HOST: rabbitmq
+      PYTHONUNBUFFERED: "1" 
   rabbitmq-worker:
     build: ./app
     container_name: rabbitmq-worker
@@ -127,4 +131,25 @@ services:
         condition: service_healthy
     environment:
       RABBITMQ_HOST: rabbitmq
+    restart: unless-stopped
+  payment-consumer:
+    build: ./consumers
+    container_name: payment-consumer
+    command: python payment_consumer.py
+    depends_on:
+      kafka:
+        condition: service_healthy
+    environment:
+      KAFKA_BOOTSTRAP: kafka:9092
+    restart: unless-stopped
+
+  delivery-consumer:
+    build: ./consumers
+    container_name: delivery-consumer
+    command: python delivery_consumer.py
+    depends_on:
+      kafka:
+        condition: service_healthy
+    environment:
+      KAFKA_BOOTSTRAP: kafka:9092
     restart: unless-stopped

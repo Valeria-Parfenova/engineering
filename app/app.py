@@ -123,9 +123,10 @@ def send_to_rabbitmq(order_id, customer, amount):
 
     channel.exchange_declare(
         exchange=RABBITMQ_EXCHANGE,
-        exchange_type=RABBITMQ_EXCHANGE_TYPE
+        exchange_type=RABBITMQ_EXCHANGE_TYPE,
+        durable=True   
     )
-    channel.queue_declare(queue=RABBITMQ_QUEUE)
+    channel.queue_declare(queue=RABBITMQ_QUEUE, durable=True)
     channel.queue_bind(
         exchange=RABBITMQ_EXCHANGE,
         queue=RABBITMQ_QUEUE,
@@ -136,7 +137,8 @@ def send_to_rabbitmq(order_id, customer, amount):
     channel.basic_publish(
         exchange=RABBITMQ_EXCHANGE,
         routing_key=RABBITMQ_ROUTING_KEY,
-        body=message
+        body=message,
+        properties=pika.BasicProperties(delivery_mode=2)
     )
     print(f"[{app_name}] Уведомление по заказу #{order_id} отправлено в RabbitMQ")
 
