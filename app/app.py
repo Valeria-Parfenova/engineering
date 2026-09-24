@@ -3,7 +3,7 @@ import time
 import json
 from flask import Flask, request, jsonify
 
-import mysql.connector
+import pymysql as mysql
 import pika
 from confluent_kafka import Producer
 
@@ -62,14 +62,15 @@ def get_producer():
 def get_mysql_connection():
     for attempt in range(10):
         try:
-            return mysql.connector.connect(
+            return mysql.connect(
                 host=MYSQL_HOST,
                 user=MYSQL_USER,
                 password=MYSQL_PASSWORD,
                 database=MYSQL_DB,
+                charset='utf8mb4',
                 autocommit=False
             )
-        except mysql.connector.Error as e:
+        except mysql.Error as e:
             print(f"[{app_name}] MySQL не готов (попытка {attempt+1}/10): {e}")
             time.sleep(3)
     raise RuntimeError("Не удалось подключиться к MySQL")
